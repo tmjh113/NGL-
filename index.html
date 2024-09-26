@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移動友好應用</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            background: linear-gradient(to bottom right, #4f46e5, #7e22ce, #ec4899);
+            transition: background-color 0.5s;
+        }
+        .app.dark {
+            background: #111827;
+        }
+        .theme-toggle {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            background-color: #4f46e5;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        .theme-toggle.dark {
+            background-color: #facc15;
+        }
+        .theme-toggle .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: white;
+        }
+        .theme-toggle.dark .icon {
+            color: #111827;
+        }
+        .content {
+            width: 100%;
+            max-width: 28rem;
+        }
+        .welcome-text {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: white;
+            opacity: 0;
+            transform: translateY(-50px);
+            transition: opacity 1s, transform 1s;
+        }
+        .welcome-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .button-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .button-wrapper:hover {
+            transform: translateY(-5px);
+        }
+        .button-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            opacity: 0.75;
+            filter: blur(1rem);
+            transition: opacity 1s;
+        }
+        .button-wrapper:hover::before {
+            opacity: 1;
+        }
+        .gradient-blue::before {
+            background: linear-gradient(to right, #22d3ee, #0ea5e9);
+        }
+        .gradient-purple::before {
+            background: linear-gradient(to right, #c084fc, #e879f9);
+        }
+        .button {
+            position: relative;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            background-color: white;
+            color: #4f46e5;
+            border-radius: 1rem;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .button:hover {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .button.dark {
+            background-color: #1f2937;
+            color: white;
+        }
+        .button-text {
+            display: flex;
+            align-items: center;
+        }
+        .button-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+        .button:hover .button-icon {
+            transform: rotate(15deg);
+        }
+        .chevron {
+            width: 1.75rem;
+            height: 1.75rem;
+            transition: transform 0.3s ease;
+        }
+        .button:hover .chevron {
+            transform: translateX(5px);
+        }
+        .button::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .button:hover::after {
+            opacity: 0.2;
+        }
+        .gradient-blue .button::after {
+            background: linear-gradient(to right, #22d3ee, #0ea5e9);
+        }
+        .gradient-purple .button::after {
+            background: linear-gradient(to right, #c084fc, #e879f9);
+        }
+        .button.active::before {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.75; }
+            50% { opacity: 1; }
+            100% { opacity: 0.75; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app">
+        <div class="content">
+            <button id="themeToggle" class="theme-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <h1 id="welcomeText" class="welcome-text">歡迎</h1>
+            <div class="button-wrapper gradient-blue">
+                <button class="button" onclick="redirectToNGL()">
+                    <span class="button-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        NGL
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+            <div class="button-wrapper gradient-purple">
+                <button class="button" onclick="window.location.href='https://tmjh113.github.io/tmjh113/'">
+                    <span class="button-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        專屬系統
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = document.getElementById('app');
+        const themeToggle = document.getElementById('themeToggle');
+        const welcomeText = document.getElementById('welcomeText');
+        const buttons = document.querySelectorAll('.button');
+        let darkMode = false;
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            app.classList.toggle('dark', darkMode);
+            themeToggle.classList.toggle('dark', darkMode);
+            buttons.forEach(button => button.classList.toggle('dark', darkMode));
+            themeToggle.innerHTML = darkMode 
+                ? '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+        }
+
+        themeToggle.addEventListener('click', toggleDarkMode);
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        setTimeout(() => {
+            welcomeText.classList.add('show');
+        }, 500);
+
+        function redirectToNGL() {
+            const randomNumber = Math.random();
+            if (randomNumber < 0.5) {
+                window.location.href = 'https://ngl.link/tmjh1131';
+            } else {
+                window.location.href = 'https://ngl.link/tmjh1132';
+            }
+        }
+    </script>
+</body>
+</html>
