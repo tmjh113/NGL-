@@ -136,29 +136,57 @@
         .button:hover .chevron {
             transform: translateX(5px);
         }
-        .button::after {
+        .button.loading .button-text {
+            visibility: hidden;
+        }
+        /* 轉圈動畫 */
+        .button.loading::after {
             content: '';
             position: absolute;
-            inset: 0;
+            width: 24px;
+            height: 24px;
+            top: 50%;
+            left: 50%;
+            margin: -12px 0 0 -12px; /* 使 spinner 居中 */
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s linear infinite;
+            z-index: 2; /* 確保 spinner 在最上層 */
+        }
+        @keyframes button-loading-spinner {
+            from {
+                transform: rotate(0turn);
+            }
+            to {
+                transform: rotate(1turn);
+            }
+        }
+        /* 新增的成功狀態樣式 */
+        .button.success .button-text {
+            visibility: hidden;
+        }
+        .button.success::after {
+            content: '✔';
+            color: #22c55e; /* 綠色勾選標記 */
+            position: absolute;
+            font-size: 1.5rem;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 2;
             opacity: 0;
-            transition: opacity 0.3s;
+            animation: checkmark-fade-in 0.3s forwards;
         }
-        .button:hover::after {
-            opacity: 0.2;
-        }
-        .gradient-blue .button::after {
-            background: linear-gradient(to right, #22d3ee, #0ea5e9);
-        }
-        .gradient-purple .button::after {
-            background: linear-gradient(to right, #c084fc, #e879f9);
-        }
-        .button.active::before {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.75; }
-            50% { opacity: 1; }
-            100% { opacity: 0.75; }
+        @keyframes checkmark-fade-in {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
     </style>
 </head>
@@ -170,7 +198,7 @@
             </button>
             <h1 id="welcomeText" class="welcome-text">歡迎</h1>
             <div class="button-wrapper gradient-blue">
-                <button class="button" onclick="redirectToNGL()">
+                <button class="button" onclick="handleButtonClick(this, redirectToNGL)">
                     <span class="button-text">
                         <svg xmlns="http://www.w3.org/2000/svg" class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -192,24 +220,53 @@
         </div>
     </div>
 
-    <script>
-        const app = document.getElementById('app');
+    <script type="module">
+        // 導入所需的 Firebase 模塊
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDAw3LKSDHHwasOhN0l63lO4I-AO1xeGGU",
+            authDomain: "tmjh113.firebaseapp.com",
+            projectId: "tmjh113",
+            storageBucket: "tmjh113.appspot.com",
+            messagingSenderId: "936878916477",
+            appId: "1:936878916477:web:cbff479db9898b0a218214",
+            measurementId: "G-J5WT01ZLBD"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const appElement = document.getElementById('app');
         const themeToggle = document.getElementById('themeToggle');
         const welcomeText = document.getElementById('welcomeText');
         const buttons = document.querySelectorAll('.button');
-        let lightMode = false;
+        let currentTheme = 'dark';
+        const themes = ['dark', 'light'];
 
-        function toggleLightMode() {
-            lightMode = !lightMode;
-            app.classList.toggle('light', lightMode);
-            themeToggle.classList.toggle('light', lightMode);
-            buttons.forEach(button => button.classList.toggle('light', lightMode));
-            themeToggle.innerHTML = lightMode 
-                ? '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>'
-                : '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+        function cycleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            updateTheme();
         }
 
-        themeToggle.addEventListener('click', toggleLightMode);
+        function updateTheme() {
+            appElement.className = `app ${currentTheme}`;
+            themeToggle.className = `theme-toggle ${currentTheme}`;
+            buttons.forEach(button => {
+                button.className = `button ${currentTheme}`;
+            });
+
+            // 更新主題切換按鈕的圖標
+            if (currentTheme === 'dark') {
+                themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            } else if (currentTheme === 'light') {
+                themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            }
+        }
+
+        themeToggle.addEventListener('click', cycleTheme);
 
         buttons.forEach(button => {
             button.addEventListener('click', function() {
@@ -230,6 +287,51 @@
                 window.location.href = 'https://ngl.link/tmjh1132';
             }
         }
+
+        async function handleButtonClick(button, action) {
+            if (button.querySelector('.button-text').innerText.trim() === 'NGL') {
+                button.classList.add('loading');
+                const ip = await fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => data.ip)
+                    .catch(error => {
+                        console.error("獲取 IP 錯誤: ", error);
+                        return '未知';
+                    });
+                const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+                const buttonText = button.querySelector('.button-text').innerText.trim();
+
+                try {
+                    await addDoc(collection(db, 'clicks'), {
+                        timestamp: `時間: ${timestamp}`,
+                        ip: ip,
+                        button: buttonText
+                    });
+                } catch (error) {
+                    console.error("新增文檔錯誤: ", error);
+                }
+
+                // 延長轉圈動畫時間為3秒後無縫過渡到勾選標記
+                setTimeout(() => {
+                    button.classList.remove('loading');
+                    button.classList.add('success');
+
+                    // 監聽勾選標記動畫結束後進行跳轉
+                    const handleAnimationEnd = () => {
+                        button.removeEventListener('animationend', handleAnimationEnd);
+                        action();
+                    };
+
+                    button.addEventListener('animationend', handleAnimationEnd);
+                }, 1000); // 加載 3 秒
+            } else {
+                action();
+            }
+        }
+
+        // 將全局函數暴露到 window 對象
+        window.handleButtonClick = handleButtonClick;
+        window.redirectToNGL = redirectToNGL;
     </script>
 </body>
 </html>
