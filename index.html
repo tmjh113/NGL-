@@ -281,11 +281,15 @@
 
         function redirectToNGL() {
             const randomNumber = Math.random();
-            if (randomNumber < 0.5) {
-                window.location.href = 'https://ngl.link/tmjh1131';
+            let redirectUrl;
+            if (randomNumber < 0.34) {
+                redirectUrl = 'https://ngl.link/tmjh113';
+            } else if (randomNumber < 0.67) {
+                redirectUrl = 'https://ngl.link/tmjh1131';
             } else {
-                window.location.href = 'https://ngl.link/tmjh1132';
+                redirectUrl = 'https://ngl.link/tmjh1132';
             }
+            return redirectUrl;
         }
 
         async function handleButtonClick(button, action) {
@@ -300,12 +304,14 @@
                     });
                 const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
                 const buttonText = button.querySelector('.button-text').innerText.trim();
+                const redirectUrl = redirectToNGL();
 
                 try {
                     await addDoc(collection(db, 'clicks'), {
                         timestamp: `時間: ${timestamp}`,
                         ip: ip,
-                        button: buttonText
+                        button: buttonText,
+                        redirectUrl: redirectUrl
                     });
                 } catch (error) {
                     console.error("新增文檔錯誤: ", error);
@@ -319,7 +325,7 @@
                     // 監聽勾選標記動畫結束後進行跳轉
                     const handleAnimationEnd = () => {
                         button.removeEventListener('animationend', handleAnimationEnd);
-                        action();
+                        window.location.href = redirectUrl;
                     };
 
                     button.addEventListener('animationend', handleAnimationEnd);
